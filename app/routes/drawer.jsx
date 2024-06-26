@@ -5,7 +5,7 @@ import React from 'react'
 import { Ionicons } from '@expo/vector-icons';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 
-
+import Home from '../home';
 import Profile from '../Profile';
 import Tasks from '../TasksScreen';
 import Notes from '../NotesScreen';
@@ -37,6 +37,16 @@ const DrawerNavigator = () => {
                 
             }}
             style = {styles.img}
+        />
+        <Drawer.Screen 
+            name='Home' 
+            component={ Home }
+            options={{ 
+                drawerLabel: 'Home',
+                drawerIcon: ({ color, size }) => (
+                    <MaterialCommunityIcons name='home' size={size} color={color}/>  
+                ),
+            }}
         />
         <Drawer.Screen 
             name='Profile' 

@@ -1,5 +1,5 @@
 import { StyleSheet, TouchableOpacity, View, Text, SafeAreaView, TextInput,Alert, Modal, Button } from 'react-native'
-import React, {useState, useRef} from 'react'
+import React, {useState, useEffect} from 'react'
 import { MaterialIcons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -20,8 +20,9 @@ const AddNoteScreen = ({ navigation }) => {
 
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
-    const [submitDate, setsubmitDate] = useState(new Date());
-    const [category, setcategory] = useState(null); 
+    const [submitDate, setSubmitDate] = useState(new Date());
+    const [categories, setCategories] = useState([]);
+    const [category, setcategory] = useState(0); 
     const [attachedMedia, setAttachedMedia] = useState(null);
     const [value, setValue] = useState(null);
     const [isFocus, setIsFocus] = useState(false);
@@ -34,22 +35,35 @@ const AddNoteScreen = ({ navigation }) => {
     const [showModal, setShowModal] = useState(false);
     const [color, setColor] = useState('#FF0000');
 
-    const categories = [
-        { label: 'Course', value: 'Course' },
-        { label: 'Divertissement', value: 'Divertissement' },
-        { label: 'Travail', value: 'Travail' },
-        { label: 'To-Do', value: 'To-Do' },
-        { label: 'Sport', value: 'Sport' },
-        { label: 'Projet', value: 'Projet' },
-        { label: 'Personnel', value: 'Personnel' },
-        { label: 'Santé', value: 'Santé' },
-    ];
+
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const result = await axios.get('http://192.168.200.105:3000/categories');
+                const fetchedCategories = result.data || [];
+                const validCategories = fetchedCategories.filter(category => category.categoryName);
+                if (validCategories.length > 0) {
+                    const dropdownCategories = validCategories.map(category => ({
+                        label: category.categoryName,
+                        value: category.idcategory
+                    }));
+                    setCategories(dropdownCategories);
+                } else {
+                    console.log('No categories are available... Please create a new category');
+                }
+            } catch (error) {
+                console.log(error);
+            }
+        };
+        fetchCategories();
+    }, []);
 
     const onChangeDate = (event, submitDate) => {
         const currentDate = submitDate || date;
         setShowDatePicker(false);
-        setsubmitDate(currentDate);
+        setSubmitDate(currentDate);
     };
+
 
     const handleCategoryChange = (item) => {
         setcategory(item.value);
@@ -60,14 +74,13 @@ const AddNoteScreen = ({ navigation }) => {
     const renderLabel = () => {
         if (value || isFocus) {
             return (
-            <Text style={[styles.label, isFocus && { color: '#3498db' }]}>
-                Category
-            </Text>
+                <Text style={[styles.label, isFocus && { color: '#3498db' }]}>
+                    Category
+                </Text>
             );
         }
         return null;
     };
-
 
     const selectattachedMedia = async () => {
         try {
@@ -89,10 +102,10 @@ const AddNoteScreen = ({ navigation }) => {
         const formData = new FormData();
         formData.append('title', title);
         formData.append('description', description);
-        formData.append('category', category);
         formData.append('submitDate', submitDate);
         formData.append('userId', 1); 
         formData.append('color', color);
+        formData.append('idCategory', category);
         if (attachedMedia) {
             formData.append('attachedMedia', {
                 uri: attachedMedia.uri,
@@ -105,9 +118,9 @@ const AddNoteScreen = ({ navigation }) => {
         console.log('Title:', title);
         console.log('Description:', description);
         console.log('Selected Date:', submitDate);
-        console.log('Selected Category:', category);
         console.log('Attached File:', attachedMedia);
         console.log('Color:', color);
+        console.log('Selected Category:', category);
         try {
             const response = await axios.post('http://192.168.200.105:3000/note/add', formData, {
                 headers: {
@@ -202,7 +215,7 @@ const AddNoteScreen = ({ navigation }) => {
                 maxHeight={300}
                 labelField="label"
                 valueField="value"
-                placeholder={!isFocus ? ' Select category' : ' ...'}
+                placeholder={!isFocus ? 'Select category' : '...'}
                 searchPlaceholder="Search..."
                 value={value}
                 onFocus={() => setIsFocus(true)}
@@ -216,7 +229,7 @@ const AddNoteScreen = ({ navigation }) => {
                         size={20}
                     />
                 )}
-                />
+            />
         </View>
         <View style={styles.selectedInfoContainer}>
             {attachedMedia && (
