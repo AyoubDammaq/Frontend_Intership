@@ -7,9 +7,9 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { Dropdown } from 'react-native-element-dropdown';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import ColorPicker, { Panel1, Swatches, Preview, OpacitySlider, HueSlider } from 'reanimated-color-picker';
+import tinycolor from 'tinycolor2';
+import CustomColorPicker from './CustomColorPicker';
 import axios from 'axios';
-import { color } from 'react-native-elements/dist/helpers';
 
 
 
@@ -71,6 +71,11 @@ const AddNoteScreen = ({ navigation }) => {
         setIsFocus(false);
     };
 
+    const handleColorChange = (color) => {
+        const hexColor = tinycolor(color).toHexString();
+        setColor(hexColor);
+    };
+
     const renderLabel = () => {
         if (value || isFocus) {
             return (
@@ -121,29 +126,24 @@ const AddNoteScreen = ({ navigation }) => {
         console.log('Attached File:', attachedMedia);
         console.log('Color:', color);
         console.log('Selected Category:', category);
-        try {
-            const response = await axios.post('http://192.168.200.105:3000/note/add', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
-    
-            if (response){
-                console.log('Note added successfully');
-                navigation.navigate('Notes');
+        const response = await axios.post('http://192.168.200.105:3000/note/add', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
 
-                setTitle('');
-                setDescription('');
-                setcategory(null);
-                setAttachedMedia(null);
-                setDate(new Date());
-                setUserId(1);
-            }else{
-                Alert.alert('Error', response.note.message || 'Something went wrong!');
-            }
-        } catch (error) {
-            Alert.alert('Error', 'An error occurred during adding');
-            console.log('Error during adding:', error.message);
+        if (response){
+            console.log('Note added successfully');
+            navigation.navigate('Notes');
+
+            setTitle('');
+            setDescription('');
+            setcategory(null);
+            setAttachedMedia(null);
+            setDate(new Date());
+            setUserId(1);
+        }else{
+            Alert.alert('Error', response.note.message || 'Something went wrong!');
         }
     };
     return (
@@ -168,28 +168,7 @@ const AddNoteScreen = ({ navigation }) => {
         <TouchableOpacity style={styles.pin} >
             <AntDesign name="pushpino" size={24} color="gray" />
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => setShowModal(true)} style={styles.color}>
-                <Icon name="color-lens" size={24} color={ color } />
-        </TouchableOpacity>
-        <View style={styles.colorContainer}>
-            <Modal visible={showModal} animationType="slide">
-                <View style={styles.modalContainer}>
-                <Text style={styles.modalTitle}>Pick a Color</Text>
-                <ColorPicker
-                    style={styles.colorPicker}
-                    value={color}
-                    onChange={color => setColor(color.hex)}
-                >
-                    <Preview />
-                    <Panel1 />
-                    <HueSlider />
-                    <OpacitySlider />
-                    <Swatches />
-                </ColorPicker>
-                <Button title="Ok" onPress={() => setShowModal(false)} />
-                </View>
-            </Modal>
-        </View>
+        <CustomColorPicker selectedColor={color} onColorSelected={handleColorChange} />
         <View style={styles.descriptionContainer}>
             <TextInput 
                 value={description} 
