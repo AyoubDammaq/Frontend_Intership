@@ -9,13 +9,13 @@ import CustomColorPicker from './CustomColorPicker';
 import axios from 'axios';
 
 
-const Home = () => {
+const Home = ({ navigation }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [categoryName, setcategory] = useState('');
+  const [idCategory, setid] = useState(0);
   const [isFocusable, setIsFocusable] = useState(false);
   const [categoryColor, setCategoryColor] = useState('#E6DFAF');
   const [errorMessage, setErrorMessage] = useState('');
-
   const [categories, setCategories] = useState([]);
 
   const fetchCategories = async () => {
@@ -42,7 +42,6 @@ const Home = () => {
     fetchCategories();
   }, []);
 
-
   const openModel = async () => {
     setModalVisible(true);
   };
@@ -62,8 +61,12 @@ const Home = () => {
     setIsFocusable(false);
   };
 
-  const handlePress = (categoryName) => {
-    console.log(`Pressed category: ${categoryName}`);
+  const handlePress = (category) => {
+    navigation.navigate('ListOfNotesScreen', {
+      choosenCategory: category.name,
+      color: category.color,
+      idcategory: category.id 
+    });
   };
 
   const handleColorChange = (color) => {
@@ -76,7 +79,6 @@ const Home = () => {
   };
 
   const addCategory = async () => {
-
     if (categoryName.trim() === '') {
       setErrorMessage('Category name cannot be empty');
       return;
@@ -100,33 +102,32 @@ const Home = () => {
     }
   };  
 
-
   return (
     <View style={styles.container}>
-        <ScrollView contentContainerStyle={styles.scrollViewContent}>
-          <View style={styles.rowContainer}>
-            {categories.map((category, index) => (
-              <TouchableOpacity
-                key={category.id}
-                style={[
-                  styles.itemContainer,
-                  index % 2 === 0 ? styles.itemLeft : styles.itemRight 
-                ]}
-                onPress={() => handlePress(category.name)}
-              >
-                <FontAwesome5 name="folder-minus" size={60} color={category.color} style={styles.folderIcon} />
-                <View style={styles.textContainer}>
-                  <Text style={styles.itemText}>{category.name}</Text>
-                  <Text style={styles.itemTextNote}>0 notes</Text>
-                </View>
-                <TouchableOpacity onPress={() => handleMorePress(category)} style={styles.moreIcon}>
-                  <MaterialIcons name="more-vert" size={24} color="gray" />
-                </TouchableOpacity>
+      <ScrollView contentContainerStyle={styles.scrollViewContent}>
+        <View style={styles.rowContainer}>
+          {categories.map((category, index) => (
+            <TouchableOpacity
+              key={category.id}
+              style={[
+                styles.itemContainer,
+                index % 2 === 0 ? styles.itemLeft : styles.itemRight 
+              ]}
+              onPress={() => handlePress(category)}
+            >
+              <FontAwesome5 name="folder-minus" size={60} color={category.color} style={styles.folderIcon} />
+              <View style={styles.textContainer}>
+                <Text style={styles.itemText}>{category.name}</Text>
+                <Text style={styles.itemTextNote}>0 notes</Text>
+              </View>
+              <TouchableOpacity onPress={() => handleMorePress(category)} style={styles.moreIcon}>
+                <MaterialIcons name="more-vert" size={24} color="gray" />
               </TouchableOpacity>
-            ))}
-          </View>
+            </TouchableOpacity>
+          ))}
+        </View>
       </ScrollView>
-      <TouchableOpacity style={styles.addButtonContainer}  onPress={openModel}>
+      <TouchableOpacity style={styles.addButtonContainer} onPress={openModel}>
         <FontAwesome5 name="pen" style={styles.addButton} />
       </TouchableOpacity>
       <View style={styles.centeredView}>
@@ -138,7 +139,7 @@ const Home = () => {
             <View style={styles.modalView}>
               <View>
                 <TouchableOpacity style={styles.quitButton} onPress={closeModel}>
-                  <FontAwesome6 name="xmark" size={24} color="black" />
+                  <FontAwesome5 name="times" size={24} color="black" />
                 </TouchableOpacity>
                 <Text style={styles.modalText}>New Category</Text>
               </View>

@@ -7,24 +7,18 @@ const moment = require('moment');
 
 
 const ListOfNotesScreen = ({ route }) => {
-    const { choosenCategory, color, icon, iconType: IconType } = route.params;
-    console.log(choosenCategory);
+    const { idcategory, color } = route.params;
     const [notes, setNotes] = useState([]);
     const [error, setError] = useState(null);
-
-    
 
     useEffect(() => {
         const fetchNotes = async () => {
             try {
                 const res = await axios.get('http://192.168.200.105:3000/notes');
-
                 const fetchedNotes = res.data || [];
-
                 const validNotes = fetchedNotes.filter(note => 
-                    note.title && note.description && note.category == choosenCategory && note.submitDate 
+                    note.title && note.description && note.idCategory == idcategory && note.submitDate
                 );
-
                 if (validNotes.length > 0) {
                     setNotes(validNotes);
                 } else {
@@ -38,8 +32,7 @@ const ListOfNotesScreen = ({ route }) => {
         };
 
         fetchNotes();
-    }, []);
-
+    }, [idcategory]);
 
     const displayNotes = () => {
         if (notes.length === 0) {
@@ -47,50 +40,47 @@ const ListOfNotesScreen = ({ route }) => {
         } else {
             const rows = [];
             for (let i = 0; i < notes.length; i += 2) {
-            rows.push(
-                <View key={i} style={styles.noteRow}>
-                <View style={[styles.noteItem, { backgroundColor: notes[i].color}]}>
-                    <Text style={styles.noteTitle}>{notes[i].title}</Text>
-                    <Text numberOfLines={2} ellipsizeMode="tail" style={styles.noteDescription}>
-                    {notes[i].description}
-                    </Text>
-                    <View style={styles.noteFooter}>
-                    <Text style={styles.noteDate}>{moment(notes[i].submitDate).format('YYYY-MM-DD')}</Text>
-                    {notes[i].attachedMedia && (
-                        <MaterialIcons name="attach-file" size={20} color="gray" style={styles.attachIcon} />
-                    )}
-                    </View>
-                </View>
-                {i + 1 < notes.length && (
-                    <View style={[styles.noteItem, { backgroundColor: notes[i].color}]}>
-                    <Text style={styles.noteTitle}>{notes[i + 1].title}</Text>
-                    <Text numberOfLines={2} ellipsizeMode="tail" style={styles.noteDescription}>
-                        {notes[i + 1].description}
-                    </Text>
-                    <View style={styles.noteFooter}>
-                        <Text style={styles.noteDate}>{moment(notes[i + 1].submitDate).format('YYYY-MM-DD')}</Text>
-                        {notes[i + 1].attachedMedia && (
-                        <MaterialIcons name="attach-file" size={20} color="gray" style={styles.attachIcon} />
+                rows.push(
+                    <View key={i} style={styles.noteRow}>
+                        <View style={[styles.noteItem, { backgroundColor: notes[i].color || '#FFFFFF' }]}>
+                            <Text style={styles.noteTitle}>{notes[i].title}</Text>
+                            <Text numberOfLines={2} ellipsizeMode="tail" style={styles.noteDescription}>
+                                {notes[i].description}
+                            </Text>
+                            <View style={styles.noteFooter}>
+                                <Text style={styles.noteDate}>{moment(notes[i].submitDate).format('YYYY-MM-DD')}</Text>
+                                {notes[i].attachedMedia && (
+                                    <MaterialIcons name="attach-file" size={20} color="gray" style={styles.attachIcon} />
+                                )}
+                            </View>
+                        </View>
+                        {i + 1 < notes.length && (
+                            <View style={[styles.noteItem, { backgroundColor: notes[i + 1].color || '#FFFFFF' }]}>
+                                <Text style={styles.noteTitle}>{notes[i + 1].title}</Text>
+                                <Text numberOfLines={2} ellipsizeMode="tail" style={styles.noteDescription}>
+                                    {notes[i + 1].description}
+                                </Text>
+                                <View style={styles.noteFooter}>
+                                    <Text style={styles.noteDate}>{moment(notes[i + 1].submitDate).format('YYYY-MM-DD')}</Text>
+                                    {notes[i + 1].attachedMedia && (
+                                        <MaterialIcons name="attach-file" size={20} color="gray" style={styles.attachIcon} />
+                                    )}
+                                </View>
+                            </View>
                         )}
                     </View>
-                    </View>
-                )}
-                </View>
-            );
+                );
             }
             return rows;
         }
-        };
-    
+    };
 
     return (
-    <View style={styles.container}>
-        <ScrollView style={[styles.listOfNotes]}>
-            {displayNotes()}
+        <ScrollView contentContainerStyle={styles.container}>
+            {error ? <Text style={styles.errorText}>{error}</Text> : displayNotes()}
         </ScrollView>
-    </View>
-    )
-}
+    );
+};
 
 export default ListOfNotesScreen
 

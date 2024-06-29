@@ -104,6 +104,7 @@ const AddNoteScreen = ({ navigation }) => {
 
     
     const addNote = async () => {
+
         const formData = new FormData();
         formData.append('title', title);
         formData.append('description', description);
@@ -119,32 +120,29 @@ const AddNoteScreen = ({ navigation }) => {
             });
         }
 
-
-        console.log('Title:', title);
-        console.log('Description:', description);
-        console.log('Selected Date:', submitDate);
-        console.log('Attached File:', attachedMedia);
-        console.log('Color:', color);
-        console.log('Selected Category:', category);
-        const response = await axios.post('http://192.168.200.105:3000/note/add', formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            },
-        });
-
-        if (response){
-            console.log('Note added successfully');
-            navigation.navigate('Notes');
-
-            setTitle('');
-            setDescription('');
-            setcategory(null);
-            setAttachedMedia(null);
-            setDate(new Date());
-            setUserId(1);
+        if(!title || !description || !submitDate || !category){
+            Alert.alert('Please enter note details');
         }else{
-            Alert.alert('Error', response.note.message || 'Something went wrong!');
+            const response = await axios.post('http://192.168.200.105:3000/note/add', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            if (response){
+                console.log('Note added successfully');
+                navigation.navigate('Notes');
+    
+                setTitle('');
+                setDescription('');
+                setcategory(null);
+                setAttachedMedia(null);
+                setDate(new Date());
+                setUserId(1);
+            }else{
+                Alert.alert('Error', response.note.message || 'Something went wrong!');
+            }
         }
+
     };
     return (
     <SafeAreaView style={styles.container}>
